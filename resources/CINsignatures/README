@@ -1,0 +1,11 @@
+**Mixmodels_merged_components.rds**
+Contains the 43 mixture components based on Gaussian and Poisson mixture models on 6,335 TCGA samples.
+
+**Signature_Compendium_v5_Cosine-0.74_Activities.rds**
+Matrix of normalised signature activities from the 6,335 TCGA samples.
+
+**Signature_Compendium_v5_Cosine-0.74_Activities_raw.rds**
+Matrix of raw signature activities from the 6,335 TCGA samples.
+
+**Signature_Compendium_v5_Cosine-0.74_Signatures.rds**
+Normalised signature definitions of 17 CIN signature compendium based on 6,335 TCGA samples.

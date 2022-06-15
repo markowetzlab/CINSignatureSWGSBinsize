@@ -1,0 +1,10 @@
+# RELATIVE PATH FROM REPO TO SAMPLE SHEET FILE
+# CHANGE BAM_FILE_PATH TO THE ABSOLUTE BAM FILE PATH FOR EACH TUMOUR SAMPLE
+samples: "sample_sheet.tsv"
+
+## CHANGE THIS TO A WRITABLE DIRECTORY
+out_dir: "/mnt/scratcha/fmlab/smith10/"
+
+# Bin sizes
+# By default any in [1,5,15,30,50,100,500,1000]
+bins: [5,15,30,50,100]

@@ -1,0 +1,115 @@
+---
+title: 'Excourse: Variability of signature activities'
+author: "Drews RM et al."
+date: "20/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(data.table)
+library(reshape2)
+library(ggplot2)
+library(ggthemes)
+library(patchwork)
+library(ComplexHeatmap)
+theme_set(theme_tufte(base_size = 12, base_family = "Arial"))
+
+BASE="~/cnsigs2_revisions"
+ORI=file.path(BASE, "CINsignatures/Signature_Compendium_v5_Cosine-0.74_Activities.rds")
+ASCAT25=file.path(BASE, "out/4_TCGA_PCAWG_Exposures_to_TCGA_Signatures_ASCAT25.rds")
+ASCAT200=file.path(BASE, "out/4_TCGA_PCAWG_Exposures_to_TCGA_Signatures_ASCAT200.rds")
+
+mOri = readRDS(ORI)
+m25 = readRDS(ASCAT25)
+m200 = readRDS(ASCAT200)
+
+
+```
+
+## Plan
+
+So far derived signature activities for ASCAT with penalties 25, 70 and 200. Let's see how close they are.
+
+```{r test}
+
+mOri = mOri[ rownames(mOri) %in% rownames(m25) & rownames(mOri) %in% rownames(m200), ]
+m25 = m25[ rownames(m25) %in% rownames(mOri) & rownames(m25) %in% rownames(m200), ]
+m200 = m200[ rownames(m200) %in% rownames(m25) & rownames(m200) %in% rownames(mOri), ]
+
+identical(rownames(mOri), rownames(m25))
+identical(rownames(m200), rownames(m25))
+
+# Simple test - subtract values from each other
+Heatmap(mOri - m25, cluster_columns = FALSE, show_row_names = FALSE, name = "70 - 25")
+summary(mOri - m25)
+
+Heatmap(mOri - m200, cluster_columns = FALSE, show_row_names = FALSE, name = "70 - 200")
+summary(mOri - m200)
+
+```
+
+The signature activities seem quite different from each other. What if we look only into one signature? How many samples change to zero and the other way around?
+
+
+```{r zeros in CS16}
+
+## Samples with zero sig activity under ASCAT 70
+zeroIDs = rownames(mOri)[ mOri[,16] == 0 ]
+length(zeroIDs)
+
+## Distribution of values for CS16 under ASCAT 25 for the same samples
+vals25 = m25[ rownames(m25) %in% zeroIDs, 16 ]
+sum(vals25 == 0)
+summary(vals25)
+
+## Distribution of values for CS16 under ASCAT 200 for the same samples
+vals200 = m200[ rownames(m200) %in% zeroIDs, 16 ]
+sum(vals200 == 0)
+summary(vals200)
+
+```
+
+For ASCAT25, roughly 5% of samples with previously zero activity switched to a non-zero activity now. For ASCAT200, around 20% of zero samples switched to a non-zero state. 
+
+Let's test all signatures.
+
+```{r zero changes in all sigs}
+
+allSigs = colnames(mOri)
+lZeros = lapply(allSigs, function(thisSig) {
+  
+  ## Samples with zero sig activity under ASCAT 70
+  zeroIDs = rownames(mOri)[ mOri[,thisSig] == 0 ]
+  numZero = length(zeroIDs)
+  
+  ## Distribution of values for CS16 under ASCAT 25 for the same samples
+  vals25 = m25[ rownames(m25) %in% zeroIDs, thisSig ]
+  numZero25 = sum(vals25 == 0)
+  
+  ## Distribution of values for CS16 under ASCAT 200 for the same samples
+  vals200 = m200[ rownames(m200) %in% zeroIDs, thisSig ]
+  numZero200 = sum(vals200 == 0)
+
+  out = c(thisSig, numZero, numZero25, numZero200)
+  return(out)
+  
+})
+
+dtZero = data.table(do.call(rbind, lZeros))
+colnames(dtZero) = c("Sig", "Zeros70", "OfThoseZero25", "OfThoseZero200")
+
+dtZeroMelt = melt(dtZero, id.vars = "Sig")
+dtZeroMelt$value = as.numeric(dtZeroMelt$value)
+dtZeroMelt$Sig = factor(as.character(dtZeroMelt$Sig), levels = paste0("CS", 1:17))
+
+ggplot(dtZeroMelt, aes(x = Sig, y = value, fill = variable)) + 
+  geom_bar(stat = "identity", position = "dodge")
+
+```
+
+What next? ASCAT 50 and 100 for all of TCGA and hope that the results are closer? Estimate probability of being non-zero when zero? Take values of samples that switch from zero to non-zero as non-interpretable signature activities (could be quite high)? Monte carlo simulations on noise?
+
+
+

@@ -1,0 +1,13 @@
+---
+# Default job submissions
+__default__:
+  account: fmlab # hpc account
+  partition: general # slurm partition
+  time: 120   # time mins
+  nodes: 1   # nodes to use
+  cpus-per-task: 2   # ncpus
+  ntasks: 1   # num of tasks
+  mem: 4000   # memory MB
+  output: logs/{rule}_{wildcards}.log # output log
+  error: logs/{rule}_{wildcards}.err # error log
+
