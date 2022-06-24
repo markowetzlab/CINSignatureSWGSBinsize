@@ -11,6 +11,8 @@
 
 Generate absolute copy number profiles and signatures for multiple bin sizes from down sampled WGS data in order to compare feature distributions and quantitatively determine comparable segment sizes distributions between sWGS and SNP6.0 array copy number profiles.
 
+Modified QDNAseq source code can be found [here](https://github.com/markowetzlab/QDNAseqmod)
+
 ## Table of contents
 
 * [Pipeline setup](#pipeline-setup)
